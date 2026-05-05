@@ -113,6 +113,13 @@ window.onload = function () {
       case 'd': case 'D': joinAndBuffer(DIR.RIGHT); e.preventDefault(); break;
 
       case 'Enter': startGame(); e.preventDefault(); break;
+
+      // Space: end game while playing, restart while on the score screen
+      case ' ':
+        if (gameRunning) endGame(null);
+        else startGame();
+        e.preventDefault();
+        break;
     }
   });
 

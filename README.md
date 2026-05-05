@@ -52,7 +52,8 @@ AIs are aware of all other racers' projected next positions and will not move in
 |---|---|
 | Arrow keys | Steer player 1 |
 | WASD | Join as player 2 / steer player 2 |
-| Enter | Reset / new game |
+| Enter | New game |
+| Space | End game while playing / restart on score screen |
 
 ### Scoring
 | Event | Points |
