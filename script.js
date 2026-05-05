@@ -101,8 +101,8 @@ window.onload = function () {
       case 'ArrowDown':  playerNextDir = DIR.DOWN;  e.preventDefault(); break;
       case 'ArrowLeft':  playerNextDir = DIR.LEFT;  e.preventDefault(); break;
       case 'ArrowRight': playerNextDir = DIR.RIGHT; e.preventDefault(); break;
+      case 'Enter':      startGame();               e.preventDefault(); break;
     }
-    // e.preventDefault() stops the browser from scrolling when arrow keys are pressed
   });
 
   document.getElementById('restartBtn').addEventListener('click', startGame);
