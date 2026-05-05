@@ -167,6 +167,10 @@ function joinAndBuffer(dir) {
       player2Joined      = true;
       balanced.isPlayer  = true;   // treated as human from now on
       balanced.aiType    = null;   // stop running AI logic for this racer
+      balanced.name      = 'PLAYER 2';   // rename for the end screen
+
+      // Update the live score card label immediately
+      document.querySelector('#card-3 .score-label').textContent = 'PLAYER 2';
     }
   }
 
@@ -218,10 +222,12 @@ function startGame() {
     r.recentTrail.push({ x: r.x, y: r.y });
   });
 
-  // Reset the score display
+  // Reset the score display and labels
   racers.forEach(function (r, i) {
     document.getElementById('score-' + i).textContent = '0';
     document.getElementById('card-'  + i).classList.remove('dead');
+    // Restore the original name label (it may have been changed if player 2 joined last game)
+    document.querySelector('#card-' + i + ' .score-label').textContent = r.name;
   });
 
   document.getElementById('timer').textContent = 'TIME LEFT: 10:00';
