@@ -81,7 +81,9 @@ const RACER_DEFS = [
 let canvas, ctx;         // the HTML <canvas> element and its 2D drawing context
 let grid;                // 2D array [row][col]: -1 = empty, 0-3 = owned by that racer
 let racers;              // array of racer objects (built fresh each game)
-let playerNextDir;       // stores the arrow key the player pressed; applied next tick
+let playerNextDir;       // direction buffered from player 1's last arrow key press
+let player2NextDir;      // direction buffered from player 2's last WASD key press
+let player2Joined;       // true once player 2 has pressed a WASD key and taken over the Balanced AI
 let gameInterval;        // reference to the setInterval timer so we can stop it
 let tickCount;           // number of game steps taken so far
 let gameRunning;         // true while a game is in progress
@@ -97,11 +99,20 @@ window.onload = function () {
   // Listen for arrow key presses anywhere on the page
   document.addEventListener('keydown', function (e) {
     switch (e.key) {
+      // ---- Player 1: arrow keys ----
       case 'ArrowUp':    playerNextDir = DIR.UP;    e.preventDefault(); break;
       case 'ArrowDown':  playerNextDir = DIR.DOWN;  e.preventDefault(); break;
       case 'ArrowLeft':  playerNextDir = DIR.LEFT;  e.preventDefault(); break;
       case 'ArrowRight': playerNextDir = DIR.RIGHT; e.preventDefault(); break;
-      case 'Enter':      startGame();               e.preventDefault(); break;
+
+      // ---- Player 2: WASD ----
+      // The first WASD press also "joins" player 2, converting the Balanced AI into a human racer
+      case 'w': case 'W': joinAndBuffer(DIR.UP);    e.preventDefault(); break;
+      case 'a': case 'A': joinAndBuffer(DIR.LEFT);  e.preventDefault(); break;
+      case 's': case 'S': joinAndBuffer(DIR.DOWN);  e.preventDefault(); break;
+      case 'd': case 'D': joinAndBuffer(DIR.RIGHT); e.preventDefault(); break;
+
+      case 'Enter': startGame(); e.preventDefault(); break;
     }
   });
 
@@ -139,6 +150,30 @@ function buildScorePanel() {
 }
 
 // ================================================================
+//  JOIN AND BUFFER (player 2)
+//  Called on every WASD key press. If player 2 hasn't joined yet,
+//  converts the Balanced AI (racer index 3) into a human-controlled
+//  racer. Always buffers the direction for the next tick.
+// ================================================================
+
+function joinAndBuffer(dir) {
+  if (!gameRunning) return;
+
+  if (!player2Joined) {
+    const balanced = racers[3];   // index 3 is always the Balanced AI
+
+    // Only take over if that racer is still alive
+    if (balanced && balanced.alive) {
+      player2Joined      = true;
+      balanced.isPlayer  = true;   // treated as human from now on
+      balanced.aiType    = null;   // stop running AI logic for this racer
+    }
+  }
+
+  player2NextDir = dir;   // buffer the direction regardless
+}
+
+// ================================================================
 //  START GAME
 //  Resets everything and launches a fresh round.
 // ================================================================
@@ -146,10 +181,12 @@ function buildScorePanel() {
 function startGame() {
   document.getElementById('overlay').style.display = 'none';
 
-  // Reset counters
-  tickCount     = 0;
-  gameRunning   = true;
-  playerNextDir = null;
+  // Reset counters and player 2 join state
+  tickCount      = 0;
+  gameRunning    = true;
+  playerNextDir  = null;
+  player2NextDir = null;
+  player2Joined  = false;   // Balanced AI is back in control at the start of each game
 
   // Build a fresh 60×60 grid — every cell starts empty (-1)
   grid = [];
@@ -336,14 +373,25 @@ function gameTick() {
   if (!gameRunning) return;
   tickCount++;
 
-  // ---- 1. Apply player's buffered key press ----
-  // We buffer the key press (in handleKeyDown) and apply it here at the
-  // start of each tick so the change takes effect in a controlled way.
+  // ---- 1. Apply buffered key presses for human players ----
+  // We buffer key presses and apply them at the start of each tick so
+  // direction changes take effect in a controlled, simultaneous way.
+
+  // Player 1 (arrow keys)
   const player = racers[0];
   if (player.alive && playerNextDir && !isOpposite(playerNextDir, player.dir)) {
     player.dir = playerNextDir;
   }
-  playerNextDir = null;   // clear the buffer
+  playerNextDir = null;
+
+  // Player 2 (WASD) — only active after they have joined
+  if (player2Joined) {
+    const player2 = racers[3];
+    if (player2.alive && player2NextDir && !isOpposite(player2NextDir, player2.dir)) {
+      player2.dir = player2NextDir;
+    }
+    player2NextDir = null;
+  }
 
   // ---- 2. Compute AI directions ----
   racers.forEach(function (racer) {
