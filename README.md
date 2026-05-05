@@ -9,7 +9,7 @@ A Tron light cycles game in the browser. 4 racers leave permanent trails. Hittin
 | `index.html` | HTML structure and layout only |
 | `style.css` | All visual styling |
 | `script.js` | All game logic |
-| `NOTES.md` | This file |
+| `README.md` | This file |
 
 ## Tech
 - Pure vanilla HTML + CSS + JavaScript — no libraries
@@ -27,24 +27,32 @@ A Tron light cycles game in the browser. 4 racers leave permanent trails. Hittin
 - 4 total: 1 human player + 3 AIs (always one of each personality)
 - All racers start halfway between the centre and their respective wall, pointing **inward** toward the centre
 - Starting layout:
-  - **Player (blue)** → left side, facing right
+  - **Player 1 (blue)** → left side, facing right
   - **Reckless (red)** → right side, facing left
   - **Survivor (green)** → top, facing down
   - **Balanced (yellow)** → bottom, facing up
+
+### Local multiplayer
+- Player 2 can join at any time by pressing a WASD key
+- This converts the Balanced (yellow) racer from AI to human control
+- The racer is renamed "PLAYER 2" on the score panel and end screen
+- Resets to AI at the start of each new game
 
 ### AI personalities
 | Name | Color | Behaviour |
 |---|---|---|
 | Reckless | Neon red | Aggressively chases the player, low self-preservation |
 | Survivor | Neon green | Flees toward open space, ignores other racers |
-| Balanced | Neon yellow | Equal weight between chasing and survival |
+| Balanced | Neon yellow | Equal weight between chasing and survival — replaced by player 2 on join |
+
+AIs are aware of all other racers' projected next positions and will not move into them.
 
 ### Controls
 | Input | Action |
 |---|---|
-| Arrow keys | Steer the player |
+| Arrow keys | Steer player 1 |
+| WASD | Join as player 2 / steer player 2 |
 | Enter | Reset / new game |
-| WASD | Reserved for player 2 (multiplayer, future) |
 
 ### Scoring
 | Event | Points |
@@ -82,10 +90,16 @@ Three-column layout — game canvas is centred:
 - Faint pixel grid beneath the trails
 - Sharp corners (0px border radius) on all buttons
 
+## Open items (multiplayer branch)
+- Rename "PLAYER" to "PLAYER 1" on the score panel when player 2 joins
+- Give player 2 a distinct colour (currently shares yellow with Balanced AI)
+- Reposition yellow/player 2 starting spot to the right side (swap with red)
+- Update in-game instructions to reflect multiplayer controls
+- Update hint text below the canvas
+
 ## Deferred for later
 - Powerups
 - Speed as a configurable setting at game start
-- Local multiplayer (player 1: arrows, player 2: WASD)
 
 ## Git
 - Repo: `github.com/ehatle/tron-light-cycles`
