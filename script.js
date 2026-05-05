@@ -242,17 +242,32 @@ function isOpposite(a, b) {
   return a.dx === -b.dx && a.dy === -b.dy;
 }
 
+// Builds a Set of "x,y" strings representing where every OTHER alive racer
+// is projected to step next tick (based on their current direction).
+// AIs use this to treat those cells as already blocked when picking a move.
+function getProjectedPositions(excludeIndex) {
+  const projected = new Set();
+  racers.forEach(function (r, i) {
+    if (!r.alive || i === excludeIndex) return;
+    projected.add((r.x + r.dir.dx) + ',' + (r.y + r.dir.dy));
+  });
+  return projected;
+}
+
 // Returns an array of directions that are safe to move from (x, y):
 //   — not a U-turn
 //   — stays inside the grid
-//   — target cell is empty
-function getSafeDirs(x, y, currentDir) {
+//   — target cell is empty in the grid (no existing trail)
+//   — target cell is not where another racer is projected to step next tick
+function getSafeDirs(x, y, currentDir, projected) {
   return Object.values(DIR).filter(function (dir) {
     if (isOpposite(dir, currentDir)) return false;   // no U-turns
     const nx = x + dir.dx;
     const ny = y + dir.dy;
     if (nx < 0 || nx >= GRID_CELLS || ny < 0 || ny >= GRID_CELLS) return false;
-    return grid[ny][nx] === -1;   // must be empty
+    if (grid[ny][nx] !== -1) return false;           // trail already here
+    if (projected && projected.has(nx + ',' + ny)) return false;  // racer heading here
+    return true;
   });
 }
 
@@ -289,7 +304,8 @@ function floodFill(startX, startY) {
 // ================================================================
 
 function recklessAI(racer) {
-  const safe = getSafeDirs(racer.x, racer.y, racer.dir);
+  const projected = getProjectedPositions(racer.index);
+  const safe = getSafeDirs(racer.x, racer.y, racer.dir, projected);
   if (safe.length === 0) return racer.dir;   // nowhere to go — keep heading into the wall
 
   const player = racers[0];   // index 0 is always the human player
@@ -319,7 +335,8 @@ function recklessAI(racer) {
 // ================================================================
 
 function survivorAI(racer) {
-  const safe = getSafeDirs(racer.x, racer.y, racer.dir);
+  const projected = getProjectedPositions(racer.index);
+  const safe = getSafeDirs(racer.x, racer.y, racer.dir, projected);
   if (safe.length === 0) return racer.dir;
 
   let bestDir   = safe[0];
@@ -342,7 +359,8 @@ function survivorAI(racer) {
 // ================================================================
 
 function balancedAI(racer) {
-  const safe = getSafeDirs(racer.x, racer.y, racer.dir);
+  const projected = getProjectedPositions(racer.index);
+  const safe = getSafeDirs(racer.x, racer.y, racer.dir, projected);
   if (safe.length === 0) return racer.dir;
 
   const player = racers[0];
