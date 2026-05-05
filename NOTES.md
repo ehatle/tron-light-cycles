@@ -1,73 +1,92 @@
-# Tron Snake — Project Notes
+# Tron Light Cycles — Project Notes
 
-## What we're building
+## What it is
 A Tron light cycles game in the browser. 4 racers leave permanent trails. Hitting any trail, your own trail, or the arena wall kills you. Last racer alive wins.
 
-## Tech decisions (locked in)
-- **Platform:** Web — single HTML file
-- **Libraries:** None. Pure vanilla HTML + CSS + JavaScript.
-- **Rendering:** HTML5 Canvas
-- **Code style:** Heavy inline comments throughout — written for someone learning to code, not an expert.
+## File structure
+| File | Purpose |
+|---|---|
+| `index.html` | HTML structure and layout only |
+| `style.css` | All visual styling |
+| `script.js` | All game logic |
+| `NOTES.md` | This file |
 
-## All gameplay decisions (locked in)
+## Tech
+- Pure vanilla HTML + CSS + JavaScript — no libraries
+- Rendering via HTML5 Canvas
+- Heavy inline comments throughout (written for a non-developer audience)
+
+## Gameplay
+
+### Arena
+- 60×60 grid, each cell 10×10 px → 600×600 px canvas
+- Full arena always visible, no scrolling
+- Walls are deadly — hitting any edge kills the racer
 
 ### Racers
-- 4 racers total: 1 human player + 3 AIs (one of each personality, always)
-- AI personalities are fixed — no selection screen needed
+- 4 total: 1 human player + 3 AIs (always one of each personality)
+- All racers start halfway between the centre and their respective wall, pointing **inward** toward the centre
+- Starting layout:
+  - **Player (blue)** → left side, facing right
+  - **Reckless (red)** → right side, facing left
+  - **Survivor (green)** → top, facing down
+  - **Balanced (yellow)** → bottom, facing up
 
-### Starting positions
-- Each racer starts halfway between the center and their wall (i.e. at 25% and 75% of width/height)
-- They point **outward** (away from center) at game start
-- Layout:
-  - Player → left side, facing left
-  - Reckless AI → right side, facing right
-  - Survivor AI → top, facing up
-  - Balanced AI → bottom, facing down
-
-### Colors (color = identity)
-- **Player:** Neon blue
-- **Reckless AI:** Neon red/orange (aggressive)
-- **Survivor AI:** Neon green (cautious)
-- **Balanced AI:** Neon yellow
-
-### Speed
-- Constant for now (one fixed speed for all racers)
-- Will become a configurable setting in a future version
+### AI personalities
+| Name | Color | Behaviour |
+|---|---|---|
+| Reckless | Neon red | Aggressively chases the player, low self-preservation |
+| Survivor | Neon green | Flees toward open space, ignores other racers |
+| Balanced | Neon yellow | Equal weight between chasing and survival |
 
 ### Controls
-- Human player: arrow keys
-- Future multiplayer: player 2 uses WASD
-
-### Win condition
-- Game ends when only 1 racer remains alive, OR
-- 10 minutes pass with no deaths (draw)
+| Input | Action |
+|---|---|
+| Arrow keys | Steer the player |
+| Enter | Reset / new game |
+| WASD | Reserved for player 2 (multiplayer, future) |
 
 ### Scoring
-- Every racer earns **1 point per second** while alive
-- Dying costs **10 points**
-- Kill credit (**+100 pts**) is only awarded if the victim crashes into one of your **last 10 placed trail cells** — old trail doesn't count
-- Score is not clamped (can go negative if you die early)
-- Scores for all 4 racers shown on screen live
+| Event | Points |
+|---|---|
+| Alive for 1 second | +1 |
+| Kill (victim hits your last 10 trail cells) | +100 |
+| Death | −10 (minimum 0) |
+
+- Scores are shown live below the canvas for all 4 racers
+- Score freezes when a racer is eliminated
 
 ### Timer
-- Starts at 10:00 and counts down
-- **Resets to 10:00 every time someone dies** — game only ends on time limit if no one dies for a full 10 minutes
+- Counts down from 10:00
+- Resets to 10:00 every time someone is eliminated
+- If 10 full minutes pass with no deaths → draw
 
-### Death & end screen
-- When a racer dies their trail stays on the grid (it's still an obstacle)
-- When the game ends: show final scores for all 4 racers with a restart button
+### Win condition
+- Last racer alive wins
+- If time runs out with multiple racers alive → draw
+
+### Death
+- Dead racer's trail remains on the grid as a permanent obstacle
+- Game ends when 1 (or 0) racers remain
+
+## UI layout
+Three-column layout — game canvas is centred:
+- **Left:** New game (↺) and End game (⏻) icon buttons
+- **Centre:** Canvas + live score panel + hint text
+- **Right:** How-to-play instructions
 
 ## Visual style
 - Black background
-- Neon glowing trails (color matches racer)
-- Pixelated/grid-based movement
-- Full arena always visible — no scrolling or camera movement
-- Hitting the arena edge kills the racer (walls are deadly)
+- Neon glowing trails matching each racer's colour
+- Racer head drawn white-hot with stronger glow
+- Faint pixel grid beneath the trails
+- Sharp corners (0px border radius) on all buttons
 
 ## Deferred for later
 - Powerups
-- Speed as a configurable game setting
-- Local multiplayer (player 1: arrow keys, player 2: WASD)
+- Speed as a configurable setting at game start
+- Local multiplayer (player 1: arrows, player 2: WASD)
 
-## Status
-All decisions locked in. Ready to build.
+## Git
+- Repo: `github.com/ehatle/tron-light-cycles`
+- AI contributions co-authored as: `Gunnar <gunnnar@real.person>`
