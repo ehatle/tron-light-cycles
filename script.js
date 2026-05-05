@@ -40,7 +40,7 @@ const RACER_DEFS = [
     color:    '#00aaff',       // neon blue
     startX:   15,              // halfway between centre (30) and left wall (0)
     startY:   30,
-    startDir: DIR.LEFT,        // faces outward → toward left wall
+    startDir: DIR.RIGHT,       // faces inward → toward centre
     isPlayer: true,
     aiType:   null,
   },
@@ -49,7 +49,7 @@ const RACER_DEFS = [
     color:    '#ff2200',       // neon red — aggressive
     startX:   45,              // halfway between centre (30) and right wall (60)
     startY:   30,
-    startDir: DIR.RIGHT,
+    startDir: DIR.LEFT,        // faces inward → toward centre
     isPlayer: false,
     aiType:   'reckless',
   },
@@ -58,7 +58,7 @@ const RACER_DEFS = [
     color:    '#00ff55',       // neon green — cautious
     startX:   30,
     startY:   15,              // halfway between centre (30) and top wall (0)
-    startDir: DIR.UP,
+    startDir: DIR.DOWN,        // faces inward → toward centre
     isPlayer: false,
     aiType:   'survivor',
   },
@@ -67,7 +67,7 @@ const RACER_DEFS = [
     color:    '#ffee00',       // neon yellow — middle ground
     startX:   30,
     startY:   45,              // halfway between centre (30) and bottom wall (60)
-    startDir: DIR.DOWN,
+    startDir: DIR.UP,          // faces inward → toward centre
     isPlayer: false,
     aiType:   'balanced',
   },
