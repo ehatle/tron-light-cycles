@@ -83,6 +83,7 @@ let grid;                // 2D array [row][col]: -1 = empty, 0-3 = owned by that
 let racers;              // array of racer objects (built fresh each game)
 let playerNextDir;       // direction buffered from player 1's last arrow key press
 let player2NextDir;      // direction buffered from player 2's last WASD key press
+let player1Joined;       // true once player 1 has pressed an arrow key and taken over from the AI
 let player2Joined;       // true once player 2 has pressed a WASD key and taken over the Balanced AI
 let gameInterval;        // reference to the setInterval timer so we can stop it
 let tickCount;           // number of game steps taken so far
@@ -100,10 +101,11 @@ window.onload = function () {
   document.addEventListener('keydown', function (e) {
     switch (e.key) {
       // ---- Player 1: arrow keys ----
-      case 'ArrowUp':    playerNextDir = DIR.UP;    e.preventDefault(); break;
-      case 'ArrowDown':  playerNextDir = DIR.DOWN;  e.preventDefault(); break;
-      case 'ArrowLeft':  playerNextDir = DIR.LEFT;  e.preventDefault(); break;
-      case 'ArrowRight': playerNextDir = DIR.RIGHT; e.preventDefault(); break;
+      // First press also joins player 1, converting the blue AI into human control
+      case 'ArrowUp':    joinPlayer1(DIR.UP);    e.preventDefault(); break;
+      case 'ArrowDown':  joinPlayer1(DIR.DOWN);  e.preventDefault(); break;
+      case 'ArrowLeft':  joinPlayer1(DIR.LEFT);  e.preventDefault(); break;
+      case 'ArrowRight': joinPlayer1(DIR.RIGHT); e.preventDefault(); break;
 
       // ---- Player 2: WASD ----
       // The first WASD press also "joins" player 2, converting the Balanced AI into a human racer
@@ -157,6 +159,28 @@ function buildScorePanel() {
 }
 
 // ================================================================
+//  JOIN PLAYER 1
+//  Called on every arrow key press. If player 1 hasn't joined yet,
+//  converts the blue racer (index 0) from Balanced AI to human control.
+//  Always buffers the direction for the next tick.
+// ================================================================
+
+function joinPlayer1(dir) {
+  if (!gameRunning) return;
+
+  if (!player1Joined) {
+    const p1 = racers[0];
+    if (p1 && p1.alive) {
+      player1Joined = true;
+      p1.isPlayer   = true;   // treated as human from now on
+      p1.aiType     = null;   // stop running AI logic for this racer
+    }
+  }
+
+  playerNextDir = dir;   // buffer the direction regardless
+}
+
+// ================================================================
 //  JOIN AND BUFFER (player 2)
 //  Called on every WASD key press. If player 2 hasn't joined yet,
 //  converts the Balanced AI (racer index 3) into a human-controlled
@@ -192,12 +216,13 @@ function joinAndBuffer(dir) {
 function startGame() {
   document.getElementById('overlay').style.display = 'none';
 
-  // Reset counters and player 2 join state
+  // Reset counters and join state for both players
   tickCount      = 0;
   gameRunning    = true;
   playerNextDir  = null;
   player2NextDir = null;
-  player2Joined  = false;   // Balanced AI is back in control at the start of each game
+  player1Joined  = false;   // blue racer starts as Balanced AI until arrow key is pressed
+  player2Joined  = false;   // yellow racer starts as Balanced AI until WASD is pressed
 
   // Build a fresh 60×60 grid — every cell starts empty (-1)
   grid = [];
@@ -221,6 +246,12 @@ function startGame() {
       recentTrail: [],   // stores the last KILL_WINDOW cell positions this racer placed
     };
   });
+
+  // Both player slots start as Balanced AI until a human joins
+  racers[0].isPlayer = false;
+  racers[0].aiType   = 'balanced';
+  racers[3].isPlayer = false;
+  racers[3].aiType   = 'balanced';
 
   // Mark each racer's starting cell as occupied in the grid,
   // and add it as the first entry in their recent trail
@@ -408,9 +439,9 @@ function gameTick() {
   // We buffer key presses and apply them at the start of each tick so
   // direction changes take effect in a controlled, simultaneous way.
 
-  // Player 1 (arrow keys)
+  // Player 1 (arrow keys) — only active after they have joined
   const player = racers[0];
-  if (player.alive && playerNextDir && !isOpposite(playerNextDir, player.dir)) {
+  if (player1Joined && player.alive && playerNextDir && !isOpposite(playerNextDir, player.dir)) {
     player.dir = playerNextDir;
   }
   playerNextDir = null;
